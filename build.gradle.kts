@@ -18,3 +18,18 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+// Указываем кодировку для компиляции
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
+
+// Указываем кодировку для тестов
+tasks.withType<Test> {
+    systemProperty("file.encoding", "UTF-8")
+}
+
+// Указываем кодировку для запуска (если будешь запускать через Gradle)
+tasks.withType<JavaExec> {
+    systemProperty("file.encoding", "UTF-8")
+}
