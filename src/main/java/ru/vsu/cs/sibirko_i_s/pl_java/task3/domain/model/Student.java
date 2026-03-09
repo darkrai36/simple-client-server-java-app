@@ -9,11 +9,20 @@ public class Student {
     public Student() {
     }
 
-    public Student(int studentId, int groupId, String studentFirstName, String studentLastName) {
-        this.studentId = studentId;
-        this.groupId = groupId;
+    public Student(String studentFirstName, String studentLastName) {
+        if (studentFirstName == null || studentFirstName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Имя студента не введено!");
+        } else if (studentLastName == null || studentLastName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Фамилия студента не введена!");
+        }
+
         this.studentFirstName = studentFirstName;
         this.studentLastName = studentLastName;
+    }
+    public Student(int studentId, int groupId, String studentFirstName, String studentLastName) {
+        this(studentFirstName, studentLastName);
+        this.studentId = studentId;
+        this.groupId = groupId;
     }
 
     public int getStudentId() {
@@ -37,6 +46,9 @@ public class Student {
     }
 
     public void setStudentFirstName(String studentFirstName) {
+        if (studentFirstName == null || studentFirstName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Имя студента не введено!");
+        }
         this.studentFirstName = studentFirstName;
     }
 

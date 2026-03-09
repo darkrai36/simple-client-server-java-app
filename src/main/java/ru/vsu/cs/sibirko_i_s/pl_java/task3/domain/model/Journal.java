@@ -9,6 +9,9 @@ public class Journal {
     private boolean task3Completed;
     private LocalDateTime updatedAt;
 
+    public Journal() {
+    }
+
     public Journal(int studentId, boolean task1Completed, boolean task2Completed, boolean task3Completed, LocalDateTime updatedAt) {
         this.studentId = studentId;
         this.task1Completed = task1Completed;

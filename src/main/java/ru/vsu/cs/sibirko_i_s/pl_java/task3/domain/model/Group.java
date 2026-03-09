@@ -10,6 +10,14 @@ public class Group {
     public Group() {
     }
 
+    public Group(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Название группы не введено");
+        }
+        this.name = name;
+        this.createdAt = LocalDateTime.now();
+    }
+
     public Group(int groupId, String name, LocalDateTime createdAt) {
         this.groupId = groupId;
         this.name = name;
@@ -29,6 +37,9 @@ public class Group {
     }
 
     public void setName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Имя группы не введено!");
+        }
         this.name = name;
     }
 
