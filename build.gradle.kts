@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("war")
 }
 
 group = "org.example"
@@ -14,6 +15,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.postgresql:postgresql:42.7.2")
+    providedCompile("javax.servlet:javax.servlet-api:4.0.1")
+    implementation("javax.servlet:jstl:1.2")
 }
 
 tasks.test {
