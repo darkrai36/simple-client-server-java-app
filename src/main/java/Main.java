@@ -7,9 +7,6 @@ import ru.vsu.cs.sibirko_i_s.pl_java.task3.domain.repository.StudentRepository;
 import ru.vsu.cs.sibirko_i_s.pl_java.task3.infrastructure.repository.db.GroupRepositoryImpl;
 import ru.vsu.cs.sibirko_i_s.pl_java.task3.infrastructure.repository.db.JournalRepositoryImpl;
 import ru.vsu.cs.sibirko_i_s.pl_java.task3.infrastructure.repository.db.StudentRepositoryImpl;
-import ru.vsu.cs.sibirko_i_s.pl_java.task3.infrastructure.repository.inmemory.GroupRepositoryInMemory;
-import ru.vsu.cs.sibirko_i_s.pl_java.task3.infrastructure.repository.inmemory.JournalRepositoryInMemory;
-import ru.vsu.cs.sibirko_i_s.pl_java.task3.infrastructure.repository.inmemory.StudentRepositoryInMemory;
 import ru.vsu.cs.sibirko_i_s.pl_java.task3.service.GroupService;
 import ru.vsu.cs.sibirko_i_s.pl_java.task3.service.JournalService;
 import ru.vsu.cs.sibirko_i_s.pl_java.task3.service.StudentService;
@@ -17,17 +14,26 @@ import ru.vsu.cs.sibirko_i_s.pl_java.task3.service.StudentService;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
+
+    @FunctionalInterface
+    public interface Command {
+        void execute() throws Exception;
+    }
+
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/java_db";
     private static final String DB_USER = "postgres";
     private static final String DB_PASSWORD = "Wewillbecomehokage196.";
 
     public static void main(String[] args) {
+
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            System.out.println("Successfull database connection!");
+            System.out.println("Success! Connected to the database.");
 
             GroupRepository groupRepository = new GroupRepositoryImpl(connection);
             StudentRepository studentRepository = new StudentRepositoryImpl(connection);
@@ -38,74 +44,88 @@ public class Main {
             GroupService groupService = new GroupService(groupRepository, studentService);
 
             Scanner scanner = new Scanner(System.in);
+
+            Map<String, Command> commands = new HashMap<>();
+
+            commands.put("1", () -> {
+                System.out.print("Enter the name of the new group: ");
+                String name = scanner.nextLine();
+                groupService.createGroup(name);
+                System.out.println("Group created successfully.");
+            });
+
+            commands.put("2", () -> {
+                System.out.print("Enter group ID to delete: ");
+                int groupId = Integer.parseInt(scanner.nextLine());
+                groupService.deleteGroup(groupId);
+                System.out.println("Group and all its students deleted successfully.");
+            });
+
+            commands.put("3", () -> {
+                System.out.print("Enter group ID: ");
+                int groupId = Integer.parseInt(scanner.nextLine());
+                System.out.print("Enter student's first name: ");
+                String firstName = scanner.nextLine();
+                System.out.print("Enter student's last name: ");
+                String lastName = scanner.nextLine();
+
+                studentService.createStudent(groupId, firstName, lastName);
+                System.out.println("Student added and journal created successfully.");
+            });
+
+            commands.put("4", () -> {
+                System.out.print("Enter student ID to delete: ");
+                int studentId = Integer.parseInt(scanner.nextLine());
+                studentService.deleteStudent(studentId);
+                System.out.println("Student and their journal deleted successfully.");
+            });
+
+            commands.put("5", () -> {
+                System.out.print("Enter student ID: ");
+                int studentId = Integer.parseInt(scanner.nextLine());
+                System.out.print("Enter task number (1, 2, or 3): ");
+                int taskNumber = Integer.parseInt(scanner.nextLine());
+                System.out.print("Is the task completed? (true/false): ");
+                boolean status = Boolean.parseBoolean(scanner.nextLine());
+
+                journalService.updateTaskStatus(studentId, taskNumber, status);
+                System.out.println("Task status updated!");
+            });
+
+            commands.put("6", () -> showAllData(groupService, studentService, journalService));
+
             System.out.println("Welcome!");
 
             while (true) {
                 printMenu();
-                System.out.print("Choose action: ");
+                System.out.print("Choose an action: ");
                 String choice = scanner.nextLine();
 
-                try {
-                    switch (choice) {
-                        case "1" -> {
-                            System.out.print("Print new group name: ");
-                            String name = scanner.nextLine();
-                            Group group = groupService.createGroup(name);
-                            System.out.println("Group has created successfully: " + group);
-                        }
-                        case "2" -> {
-                            System.out.print("Print group id to remove: ");
-                            int groupId = Integer.parseInt(scanner.nextLine());
-                            groupService.deleteGroup(groupId);
-                            System.out.println("Group and all its students are deleted successfully.");
-                        }
-                        case "3" -> {
-                            System.out.print("Print group id: ");
-                            int groupId = Integer.parseInt(scanner.nextLine());
-                            System.out.print("Print student first name: ");
-                            String firstName = scanner.nextLine();
-                            System.out.print("Print student last name: ");
-                            String lastName = scanner.nextLine();
-
-                            Student student = studentService.createStudent(groupId, firstName, lastName);
-                            System.out.println("Student added successfully, journal created: " + student);
-                        }
-                        case "4" -> {
-                            System.out.print("Print student id to remove: ");
-                            int studentId = Integer.parseInt(scanner.nextLine());
-                            studentService.deleteStudent(studentId);
-                            System.out.println("Student and his journal deleted successfully.");
-                        }
-                        case "5" -> {
-                            System.out.print("Print student id: ");
-                            int studentId = Integer.parseInt(scanner.nextLine());
-                            System.out.print("Print number of task (1, 2 or 3): ");
-                            int taskNumber = Integer.parseInt(scanner.nextLine());
-                            System.out.print("is task completed? (true/false): ");
-                            boolean status = Boolean.parseBoolean(scanner.nextLine());
-
-                            journalService.updateTaskStatus(studentId, taskNumber, status);
-                            System.out.println("Task status updated!");
-                        }
-                        case "6" -> showAllData(groupService, studentService, journalService);
-                        case "0" -> {
-                            System.out.println("End work...");
-                            return;
-                        }
-                        default -> System.out.println("Incorrect command, try again.");
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("Error: Please, print digit, where should be ID or number.");
-                } catch (IllegalArgumentException e) {
-                    System.out.println("Business-logic error: " + e.getMessage());
-                } catch (Exception e) {
-                    System.out.println("An unexpected error occurred: " + e.getMessage());
+                if ("0".equals(choice)) {
+                    System.out.println("Exiting program...");
+                    break;
                 }
 
+                Command command = commands.get(choice);
+
+                if (command != null) {
+                    try {
+                        command.execute();
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error: Please enter a valid number.");
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Business logic error: " + e.getMessage());
+                    } catch (Exception e) {
+                        System.out.println("An unexpected error occurred: " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("Invalid command. Please try again.");
+                }
                 System.out.println("--------------------------------------------------");
             }
+
         } catch (SQLException e) {
-            System.err.println("No database connection: " + e.getMessage());
+            System.err.println("Database connection failed: " + e.getMessage());
         }
     }
 
@@ -115,15 +135,15 @@ public class Main {
         System.out.println("2. Delete group (and all its students)");
         System.out.println("3. Add student to group");
         System.out.println("4. Delete student");
-        System.out.println("5. Change student's task status in journal");
-        System.out.println("6. Show all groups, students and their journals");
+        System.out.println("5. Change student's task status");
+        System.out.println("6. Show all data");
         System.out.println("0. Exit");
     }
 
     private static void showAllData(GroupService groupService, StudentService studentService, JournalService journalService) {
         List<Group> groups = groupService.getAllGroups();
         if (groups.isEmpty()) {
-            System.out.println("No groops in system.");
+            System.out.println("No groups found in the system.");
             return;
         }
 
@@ -132,7 +152,7 @@ public class Main {
             List<Student> students = studentService.getStudentsByGroupId(group.getGroupId());
 
             if (students.isEmpty()) {
-                System.out.println("  There are no students in this group.");
+                System.out.println("  No students in this group yet.");
                 continue;
             }
 
@@ -147,7 +167,7 @@ public class Main {
                             journal.isTask2Completed() ? "X" : " ",
                             journal.isTask3Completed() ? "X" : " ");
                 } catch (IllegalArgumentException e) {
-                    System.out.println(" | Journal is not found!");
+                    System.out.println(" | Journal not found!");
                 }
             }
         }
